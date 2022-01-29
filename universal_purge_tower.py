@@ -70,7 +70,7 @@ if __name__=="__main__":
                 last_move=lines[i]
                 if "E" in last_move:
                     last_e=last_move[last_move.index("E"):]
-                    ret_move=last_move[0:last_move.index("E")]+"\n"
+                    ret_move=last_move[0:last_move.index("E")-1]+"\n"
             if ";Z:" in lines[i]:
                 temp=float(lines[i].replace(";Z:","").replace("\n",""))
                 lh=round(temp-z,2)
@@ -80,6 +80,22 @@ if __name__=="__main__":
             if ";WIDTH:" in lines[i]:
                 last_width=lines[i]
             if "; printing object" in lines[i] and purge==True:
+                #detect extra retraction
+                ex_ret=-1
+                ex_g92=False
+                for j in range(i,i+10):
+                    if ("G1" in lines[j] or "G0" in lines[j]) and "E" in lines[j] and ex_ret<0:
+                        if "F" in lines[j]:
+                            if round(float(lines[j][lines[j].index("E")+1:lines[j].index(" ",lines[j].index("E"))]),2) < round(float(last_e[1:-1]),2):
+                                ex_ret=j
+                                lines[j]=";"+lines[j]
+                        else:
+                            if round(float(lines[j][lines[j].index("E")+1:-1]),2) < round(float(last_e[1:-1]),2):
+                                ex_ret=j
+                                lines[j]=";"+lines[j]
+                    if "G92 E" in lines[j]:
+                        ex_g92=True
+                        lines[j]="G92 E"+str(-ret_l)+"\n"
                 #for corrected preview
                 fo.write("; printing object purge id:-1 copy 0\n")
                 fo.write(";TYPE:Skirt/Brim\n")
@@ -100,9 +116,11 @@ if __name__=="__main__":
                 fo.write("G1 X"+str(purge_x)+" Y"+str(purge_y)+" E"+str(e)+" F"+str(60*purge_spd)+"\n")
                 #retract & return
                 fo.write("G1 E"+str(e-ret_l)+" F"+str(60*ret_spd)+"\n")
-                fo.write(ret_move[:-1]+" F"+str(60*t_spd)+"\n")
-                fo.write("G1 E"+str(e)+" F"+str(60*ret_spd)+"\n")
-                fo.write("G92 "+last_e)
+                if ex_ret<0:
+                    fo.write(ret_move[:-1]+" F"+str(60*t_spd)+"\n")
+                    fo.write("G1 E"+str(e)+" F"+str(60*ret_spd)+"\n")
+                if not ex_g92:
+                    fo.write("G92 "+last_e)
                 #for corrected preview
                 fo.write("; stop printing object purge id:-1 copy 0\n")
                 fo.write(";LAYER_CHANGE\n")
