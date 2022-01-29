@@ -64,10 +64,12 @@ if __name__=="__main__":
         last_width=""
         purge=False
         e=0
+        last_e=0
         for i in range(len(lines)):
             if ("G1" in lines[i] or "G0" in lines[i]) and ("X" in lines[i] or "Y" in lines[i]):
                 last_move=lines[i]
                 if "E" in last_move:
+                    last_e=last_move[last_move.index("E"):]
                     ret_move=last_move[0:last_move.index("E")]+"\n"
             if ";Z:" in lines[i]:
                 temp=float(lines[i].replace(";Z:","").replace("\n",""))
@@ -100,7 +102,7 @@ if __name__=="__main__":
                 fo.write("G1 E"+str(e-ret_l)+" F"+str(60*ret_spd)+"\n")
                 fo.write(ret_move[:-1]+" F"+str(60*t_spd)+"\n")
                 fo.write("G1 E"+str(e)+" F"+str(60*ret_spd)+"\n")
-                fo.write("G92 "+last_move[last_move.index("E"):])
+                fo.write("G92 "+last_e)
                 #for corrected preview
                 fo.write("; stop printing object purge id:-1 copy 0\n")
                 fo.write(";LAYER_CHANGE\n")
