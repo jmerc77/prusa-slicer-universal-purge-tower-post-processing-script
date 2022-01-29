@@ -95,7 +95,7 @@ if __name__=="__main__":
                                 lines[j]=";"+lines[j]
                     if "G92 E" in lines[j]:
                         ex_g92=True
-                        lines[j]="G92 E"+str(-ret_l)+"\n"
+                        #lines[j]="G92 E"+str(-ret_l)+"\n"
                 #for corrected preview
                 fo.write("; printing object purge id:-1 copy 0\n")
                 fo.write(";TYPE:Skirt/Brim\n")
