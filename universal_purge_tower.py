@@ -119,8 +119,8 @@ if __name__=="__main__":
                 if ex_ret<0:
                     fo.write(ret_move[:-1]+" F"+str(60*t_spd)+"\n")
                     fo.write("G1 E"+str(e)+" F"+str(60*ret_spd)+"\n")
-                if not ex_g92:
-                    fo.write("G92 "+last_e)
+                    if not ex_g92:
+                        fo.write("G92 "+last_e)
                 #for corrected preview
                 fo.write("; stop printing object purge id:-1 copy 0\n")
                 fo.write(";LAYER_CHANGE\n")
