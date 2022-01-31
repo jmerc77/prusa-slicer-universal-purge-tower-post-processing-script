@@ -74,7 +74,7 @@ if __name__=="__main__":
             if ";Z:" in lines[i]:
                 temp=float(lines[i].replace(";Z:","").replace("\n",""))
                 lh=round(temp-z,2)
-                if lh>=min_lh:
+                if lh>=min_lh and round(temp,2)>z:
                     z=round(temp,2)
                     purge=True
             if ";WIDTH:" in lines[i]:
