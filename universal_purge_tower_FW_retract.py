@@ -13,6 +13,8 @@ purge_spd=30
 #minimum layer height of purge:
 min_lh=0.1
 
+color_change="M600"
+
 #No touch below! (unless you know what you are doing)
 import sys
 import re
@@ -79,6 +81,15 @@ if __name__=="__main__":
                     purge=True
             if ";WIDTH:" in lines[i]:
                 last_width=lines[i]
+            #force color change over purge square
+            if color_change in lines[i]:
+                #retract
+                fo.write("G10\n")
+                #travel to square
+                fo.write("G1 X"+str(purge_x)+" Y"+str(purge_y)+" F"+str(60*t_spd)+"\n")
+                #unretract
+                fo.write("G11\n")
+                #M600 will auto fill at bottom
             if "; printing object" in lines[i] and purge==True:
                 #detect extra retraction
                 ex_ret=-1
