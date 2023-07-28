@@ -30,10 +30,8 @@ nd=None
 t_spd=None
 lh=0
 
-def calc_e(l,lh,purge_width,flow,fil_d):
-    #cylinder+1/2torus+cylinder+rectangular prism
-    vo=math.pi*(((purge_width-lh)/2)**2)*lh+(math.pi**2/4*((purge_width-lh*2)/2+purge_width/2)*(purge_width/2-(purge_width-lh*2)/2)**2)/2+((purge_width-lh)*lh+math.pi*(lh/2)**2)*l
-    return vo/(math.pi*((fil_d/2)**2))*flow
+def calc_e(l,lh,ew,flow,fil_d):
+    return (lh*flow*ew*l)/(math.pi/4*(fil_d**2))
 
 if __name__=="__main__":
     file_in=sys.argv[1]
@@ -82,7 +80,7 @@ if __name__=="__main__":
             if ";WIDTH:" in lines[i]:
                 last_width=lines[i]
             #force color change over purge square
-            if color_change in lines[i]:
+            if lines[i].strip(" \n\r\t").startswith(color_change):
                 #retract
                 fo.write("G10\n")
                 #travel to square
@@ -110,13 +108,14 @@ if __name__=="__main__":
                 fo.write("; printing object purge id:-1 copy 0\n")
                 fo.write(";TYPE:Skirt/Brim\n")
                 fo.write(";WIDTH:"+str(purge_width)+"\n")
-                fo.write("G92 E0\n")
+                
                 #retract & move
-                fo.write("G1 E"+str(-ret_l)+" F"+str(60*ret_spd)+"\n")
+                fo.write("G1 E"+str(float(last_e[1:-1])-ret_l)+" F"+str(60*ret_spd)+"\n")
+                fo.write("G92 E0\n")
                 fo.write("G1 X"+str(purge_x)+" Y"+str(purge_y)+" F"+str(60*t_spd)+"\n")
-                fo.write("G1 E0 F"+str(60*ret_spd)+"\n")
+                fo.write("G1 Eret_l F"+str(60*ret_spd)+"\n")
                 #print a hollow square
-                e=calc_e(purge_w,lh,purge_width,flow,fil_d)
+                e=calc_e(purge_w,lh,purge_width,flow,fil_d)+ret_l
                 fo.write("G1 X"+str(purge_x+purge_w)+" Y"+str(purge_y)+" E"+str(e)+" F"+str(60*purge_spd)+"\n")
                 e+=calc_e(purge_l,lh,purge_width,flow,fil_d)
                 fo.write("G1 X"+str(purge_x+purge_w)+" Y"+str(purge_y+purge_l)+" E"+str(e)+" F"+str(60*purge_spd)+"\n")
@@ -125,10 +124,10 @@ if __name__=="__main__":
                 e+=calc_e(purge_l,lh,purge_width,flow,fil_d)
                 fo.write("G1 X"+str(purge_x)+" Y"+str(purge_y)+" E"+str(e)+" F"+str(60*purge_spd)+"\n")
                 #retract & return
-                fo.write("G1 E"+str(e-ret_l)+" F"+str(60*ret_spd)+"\n")
+                fo.write("G1 E"+str(e-ret_l)+" F"+str(60*ret_spd)+"\n")#retract
                 if ex_ret<0:
-                    fo.write(ret_move[:-1]+" F"+str(60*t_spd)+"\n")
-                    fo.write("G1 E"+str(e)+" F"+str(60*ret_spd)+"\n")
+                    fo.write(ret_move[:-1]+" F"+str(60*t_spd)+"\n") #return
+                    fo.write("G1 E"+str(e)+" F"+str(60*ret_spd)+"\n")#unretract
                     if not ex_g92:
                         fo.write("G92 "+last_e)
                 #for corrected preview
